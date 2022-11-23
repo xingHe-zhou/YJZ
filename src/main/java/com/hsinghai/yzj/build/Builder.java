@@ -40,17 +40,17 @@ public class Builder<T extends Serializable> {
 		Assert.notNull(setterBiConsumer, "setterBiConsumer");
 		Assert.notNull(setterValue, "setterValue");
 		Consumer<T> setterConsumer = instance -> setterBiConsumer.accept(instance, setterValue);
-		if (setterConsumerChain == null) {
-			setterConsumerChain = setterConsumer;
+		if (this.setterConsumerChain == null) {
+			this.setterConsumerChain = setterConsumer;
 		} else {
-			setterConsumerChain = setterConsumerChain.andThen(setterConsumer);
+			this.setterConsumerChain = this.setterConsumerChain.andThen(setterConsumer);
 		}
 		return this;
 	}
 	
 	public T build() {
-		T t = noArgsConstructorSupplier.get();
-		setterConsumerChain.accept(t);
+		T t = this.noArgsConstructorSupplier.get();
+		this.setterConsumerChain.accept(t);
 		return t;
 	}
 }
