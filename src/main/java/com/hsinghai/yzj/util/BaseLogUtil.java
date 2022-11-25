@@ -1,6 +1,7 @@
 package com.hsinghai.yzj.util;
 
 import org.slf4j.Logger;
+import org.springframework.util.Assert;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -65,6 +66,9 @@ public abstract class BaseLogUtil {
 	 */
 	@SafeVarargs
 	protected static <E extends RuntimeException> void recordLog(Logger logger, E occurredException, BiConsumer<Logger, Object[]> loggerBiConsumer, Class<E>... serviceExceptions) {
+		Assert.notNull(logger, "logger");
+		Assert.notNull(occurredException, "occurredException");
+		Assert.notNull(serviceExceptions, "serviceExceptions");
 		String occurredExceptionName = occurredException.getClass().getName();
 		String occurredExceptionMessage = occurredException.getMessage();
 		if (isServiceExceptions(occurredException, serviceExceptions)) {
