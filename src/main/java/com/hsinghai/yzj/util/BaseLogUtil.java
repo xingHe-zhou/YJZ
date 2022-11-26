@@ -15,31 +15,40 @@ import java.util.function.BiConsumer;
  */
 public abstract class BaseLogUtil {
 	
+	public static <T> void trace(Logger logger, T target) {
+		recordLog(logger, target, (l, arguments) -> {
+			if (l.isTraceEnabled()) l.debug("{}:{}", arguments, target);
+		});
+	}
+	
+	public static <T> void debug(Logger logger, T target) {
+		recordLog(logger, target, (l, arguments) -> {
+			if (l.isDebugEnabled()) l.debug("{}:{}", arguments, target);
+		});
+	}
+	
+	public static <T> void info(Logger logger, T target) {
+		recordLog(logger, target, (l, arguments) -> {
+			if (l.isInfoEnabled()) l.info("{}:{}", arguments, target);
+		});
+	}
+	
+	public static <T> void warn(Logger logger, T target) {
+		recordLog(logger, target, (l, arguments) -> {
+			if (l.isWarnEnabled()) l.warn("{}:{}", arguments, target);
+		});
+	}
+	
+	public static <T> void error(Logger logger, T target) {
+		recordLog(logger, target, (l, arguments) -> {
+			if (l.isErrorEnabled()) l.error("{}:{}", arguments, target);
+		});
+	}
+	
 	@SafeVarargs
 	public static <E extends RuntimeException> void trace(Logger logger, E occurredException, Class<E>... serviceExceptions) {
 		recordLog(logger, occurredException, (l, arguments) -> {
 			if (l.isTraceEnabled()) l.trace("{}:{}", arguments);
-		}, serviceExceptions);
-	}
-	
-	@SafeVarargs
-	public static <E extends RuntimeException> void debug(Logger logger, E occurredException, Class<E>... serviceExceptions) {
-		recordLog(logger, occurredException, (l, arguments) -> {
-			if (l.isDebugEnabled()) l.debug("{}:{}", arguments);
-		}, serviceExceptions);
-	}
-	
-	@SafeVarargs
-	public static <E extends RuntimeException> void info(Logger logger, E occurredException, Class<E>... serviceExceptions) {
-		recordLog(logger, occurredException, (l, arguments) -> {
-			if (l.isInfoEnabled()) l.info("{}:{}", arguments);
-		}, serviceExceptions);
-	}
-	
-	@SafeVarargs
-	public static <E extends RuntimeException> void warn(Logger logger, E occurredException, Class<E>... serviceExceptions) {
-		recordLog(logger, occurredException, (l, arguments) -> {
-			if (l.isWarnEnabled()) l.warn("{}:{}", arguments);
 		}, serviceExceptions);
 	}
 	
@@ -60,21 +69,26 @@ public abstract class BaseLogUtil {
 	 * </p>
 	 *
 	 * @param logger            日志记录器. 这是一个 slf4j 的, 因此可以适配所有不同品种的日志记录器.
-	 * @param occurredException 在处理程序执行期间发生的异常.
+	 * @param target            要记录的目标实例, 这可能是一个在处理程序执行期间发生的异常.
 	 * @param loggerBiConsumer  logger 的消费商, 由其它公开方法自行消费这个 logger, 在这里的消费操作应是去执行记录.
 	 * @param serviceExceptions 业务异常字节码可变列表.
 	 */
 	@SafeVarargs
-	protected static <E extends RuntimeException> void recordLog(Logger logger, E occurredException, BiConsumer<Logger, Object[]> loggerBiConsumer, Class<E>... serviceExceptions) {
+	protected static <T, E extends RuntimeException> void recordLog(Logger logger, T target, BiConsumer<Logger, Object[]> loggerBiConsumer, Class<E>... serviceExceptions) {
 		Assert.notNull(logger, "logger");
-		Assert.notNull(occurredException, "occurredException");
+		Assert.notNull(target, "target");
 		Assert.notNull(serviceExceptions, "serviceExceptions");
-		String occurredExceptionName = occurredException.getClass().getName();
-		String occurredExceptionMessage = occurredException.getMessage();
-		if (isServiceExceptions(occurredException, serviceExceptions)) {
-			loggerBiConsumer.accept(logger, new Object[]{occurredExceptionName, occurredExceptionMessage});
+		String targetClassName = target.getClass().getName();
+		if (target instanceof RuntimeException) {
+			RuntimeException occurredException = (RuntimeException) target;
+			String occurredExceptionMessage = occurredException.getMessage();
+			if (isServiceExceptions(occurredException, serviceExceptions)) {
+				loggerBiConsumer.accept(logger, new Object[]{targetClassName, occurredExceptionMessage});
+			} else {
+				loggerBiConsumer.accept(logger, new Object[]{targetClassName, occurredExceptionMessage, occurredException});
+			}
 		} else {
-			loggerBiConsumer.accept(logger, new Object[]{occurredExceptionName, occurredExceptionMessage, occurredException});
+			loggerBiConsumer.accept(logger, new Object[]{targetClassName});
 		}
 	}
 	
@@ -92,11 +106,11 @@ public abstract class BaseLogUtil {
 	 * @return true: occurredException 视为一个业务异常; false: occurredException 不视为一个业务异常;
 	 */
 	@SafeVarargs
-	protected static <E extends RuntimeException> Boolean isServiceExceptions(E occurredException, Class<E>... serviceExceptions) {
-		boolean result = Arrays
-							.stream(serviceExceptions)
-							.map(serviceException -> serviceException.cast(occurredException))
-							.anyMatch(Objects :: nonNull);
-		return occurredException instanceof IllegalArgumentException || occurredException instanceof IllegalStateException || result;
+	protected static Boolean isServiceExceptions(RuntimeException occurredException, Class<? extends RuntimeException>... serviceExceptions) {
+		boolean isServiceException = Arrays
+										.stream(serviceExceptions)
+										.map(serviceException -> serviceException.cast(occurredException))
+										.anyMatch(Objects :: nonNull);
+		return occurredException instanceof IllegalArgumentException || occurredException instanceof IllegalStateException || isServiceException;
 	}
 }
