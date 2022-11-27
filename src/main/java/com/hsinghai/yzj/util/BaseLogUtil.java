@@ -14,48 +14,49 @@ import java.util.function.BiConsumer;
  * @since 1.0
  */
 public abstract class BaseLogUtil {
+	private static final StackTraceElement[] STACK_TRACE = Thread.currentThread().getStackTrace();
 	
 	public static <T> void trace(Logger logger, T target) {
 		recordLog(logger, target, (l, arguments) -> {
-			if (l.isTraceEnabled()) l.debug("{}:{}", arguments, target);
+			if (l.isTraceEnabled()) l.trace("Location({})、Message({})", STACK_TRACE[2], target);
 		});
 	}
 	
 	public static <T> void debug(Logger logger, T target) {
 		recordLog(logger, target, (l, arguments) -> {
-			if (l.isDebugEnabled()) l.debug("{}:{}", arguments, target);
+			if (l.isDebugEnabled()) l.debug("Location({})、Message({})", STACK_TRACE[2], target);
 		});
 	}
 	
 	public static <T> void info(Logger logger, T target) {
 		recordLog(logger, target, (l, arguments) -> {
-			if (l.isInfoEnabled()) l.info("{}:{}", arguments, target);
+			if (l.isInfoEnabled()) l.info("Location({})、Message({})", STACK_TRACE[2], target);
 		});
 	}
 	
 	public static <T> void warn(Logger logger, T target) {
 		recordLog(logger, target, (l, arguments) -> {
-			if (l.isWarnEnabled()) l.warn("{}:{}", arguments, target);
+			if (l.isWarnEnabled()) l.warn("Location({})、Message({})", STACK_TRACE[2], target);
 		});
 	}
 	
 	public static <T> void error(Logger logger, T target) {
 		recordLog(logger, target, (l, arguments) -> {
-			if (l.isErrorEnabled()) l.error("{}:{}", arguments, target);
+			if (l.isErrorEnabled()) l.error("Location({})、Message({})", STACK_TRACE[2], target);
 		});
 	}
 	
 	@SafeVarargs
-	public static <E extends RuntimeException> void trace(Logger logger, E occurredException, Class<E>... serviceExceptions) {
+	public static <E extends RuntimeException> void trace(E occurredException, Logger logger, Class<E>... serviceExceptions) {
 		recordLog(logger, occurredException, (l, arguments) -> {
-			if (l.isTraceEnabled()) l.trace("{}:{}", arguments);
+			if (l.isTraceEnabled()) l.trace(STACK_TRACE[2] + " ------> {}:{}", arguments);
 		}, serviceExceptions);
 	}
 	
 	@SafeVarargs
-	public static <E extends RuntimeException> void error(Logger logger, E occurredException, Class<E>... serviceExceptions) {
+	public static <E extends RuntimeException> void error(E occurredException, Logger logger, Class<E>... serviceExceptions) {
 		recordLog(logger, occurredException, (l, arguments) -> {
-			if (l.isErrorEnabled()) l.error("{}:{}", arguments);
+			if (l.isErrorEnabled()) l.error(STACK_TRACE[2] + " ------> {}:{}", arguments);
 		}, serviceExceptions);
 	}
 	
@@ -77,18 +78,17 @@ public abstract class BaseLogUtil {
 	protected static <T, E extends RuntimeException> void recordLog(Logger logger, T target, BiConsumer<Logger, Object[]> loggerBiConsumer, Class<E>... serviceExceptions) {
 		Assert.notNull(logger, "logger");
 		Assert.notNull(target, "target");
-		Assert.notNull(serviceExceptions, "serviceExceptions");
-		String targetClassName = target.getClass().getName();
 		if (target instanceof RuntimeException) {
 			RuntimeException occurredException = (RuntimeException) target;
+			String occurredExceptionClassName = target.getClass().getName();
 			String occurredExceptionMessage = occurredException.getMessage();
 			if (isServiceExceptions(occurredException, serviceExceptions)) {
-				loggerBiConsumer.accept(logger, new Object[]{targetClassName, occurredExceptionMessage});
+				loggerBiConsumer.accept(logger, new Object[]{occurredExceptionClassName, occurredExceptionMessage});
 			} else {
-				loggerBiConsumer.accept(logger, new Object[]{targetClassName, occurredExceptionMessage, occurredException});
+				loggerBiConsumer.accept(logger, new Object[]{occurredExceptionClassName, occurredExceptionMessage, occurredException});
 			}
 		} else {
-			loggerBiConsumer.accept(logger, new Object[]{targetClassName});
+			loggerBiConsumer.accept(logger, null);
 		}
 	}
 	
@@ -102,7 +102,7 @@ public abstract class BaseLogUtil {
 	 * </p>
 	 *
 	 * @param occurredException 在处理程序执行期间发生的异常.
-	 * @param serviceExceptions 业务异常字节码可变列表.
+	 * @param serviceExceptions 业务异常字节码实例可变列表, 这将作为 occurredException 是否为业务异常地筛选依据.
 	 * @return true: occurredException 视为一个业务异常; false: occurredException 不视为一个业务异常;
 	 */
 	@SafeVarargs
