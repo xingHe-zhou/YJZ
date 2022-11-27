@@ -14,49 +14,55 @@ import java.util.function.BiConsumer;
  * @since 1.0
  */
 public abstract class BaseLogUtil {
-	private static final StackTraceElement[] STACK_TRACE = Thread.currentThread().getStackTrace();
 	
 	public static <T> void trace(Logger logger, T target) {
+		StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[2];
 		recordLog(logger, target, (l, arguments) -> {
-			if (l.isTraceEnabled()) l.trace("Location({})、Message({})", STACK_TRACE[2], target);
+			if (l.isTraceEnabled()) l.trace("Location({})、Message({})", stackTraceElement, target);
 		});
 	}
 	
 	public static <T> void debug(Logger logger, T target) {
+		StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[2];
 		recordLog(logger, target, (l, arguments) -> {
-			if (l.isDebugEnabled()) l.debug("Location({})、Message({})", STACK_TRACE[2], target);
+			if (l.isDebugEnabled()) l.debug("Location({})、Message({})", stackTraceElement, target);
 		});
 	}
 	
 	public static <T> void info(Logger logger, T target) {
+		StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[2];
 		recordLog(logger, target, (l, arguments) -> {
-			if (l.isInfoEnabled()) l.info("Location({})、Message({})", STACK_TRACE[2], target);
+			if (l.isInfoEnabled()) l.info("Location({})、Message({})", stackTraceElement, target);
 		});
 	}
 	
 	public static <T> void warn(Logger logger, T target) {
+		StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[2];
 		recordLog(logger, target, (l, arguments) -> {
-			if (l.isWarnEnabled()) l.warn("Location({})、Message({})", STACK_TRACE[2], target);
+			if (l.isWarnEnabled()) l.warn("Location({})、Message({})", stackTraceElement, target);
 		});
 	}
 	
 	public static <T> void error(Logger logger, T target) {
+		StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[2];
 		recordLog(logger, target, (l, arguments) -> {
-			if (l.isErrorEnabled()) l.error("Location({})、Message({})", STACK_TRACE[2], target);
+			if (l.isErrorEnabled()) l.error("Location({})、Message({})", stackTraceElement, target);
 		});
 	}
 	
 	@SafeVarargs
 	public static <E extends RuntimeException> void trace(E occurredException, Logger logger, Class<E>... serviceExceptions) {
+		StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[2];
 		recordLog(logger, occurredException, (l, arguments) -> {
-			if (l.isTraceEnabled()) l.trace(STACK_TRACE[2] + " ------> {}:{}", arguments);
+			if (l.isTraceEnabled()) l.trace(stackTraceElement + " ------> {}:{}", arguments);
 		}, serviceExceptions);
 	}
 	
 	@SafeVarargs
 	public static <E extends RuntimeException> void error(E occurredException, Logger logger, Class<E>... serviceExceptions) {
+		StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[2];
 		recordLog(logger, occurredException, (l, arguments) -> {
-			if (l.isErrorEnabled()) l.error(STACK_TRACE[2] + " ------> {}:{}", arguments);
+			if (l.isErrorEnabled()) l.error(stackTraceElement + " ------> {}:{}", arguments);
 		}, serviceExceptions);
 	}
 	
