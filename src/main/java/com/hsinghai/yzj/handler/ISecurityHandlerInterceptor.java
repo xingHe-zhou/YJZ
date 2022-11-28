@@ -1,5 +1,6 @@
 package com.hsinghai.yzj.handler;
 
+import org.springframework.core.Ordered;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.util.Set;
@@ -11,7 +12,7 @@ import java.util.Set;
  * @since 1.0
  */
 public interface ISecurityHandlerInterceptor
-		extends HandlerInterceptor {
+		extends HandlerInterceptor, Ordered {
 	/**
 	 * <p>
 	 *     拦截器实例要包含的 URL 路径模式.
