@@ -7,7 +7,7 @@ import java.util.Set;
 /**
  * <h2>安全处理程序拦截器</h2>
  *
- * @author 云上的云
+ * @author lyq
  * @since 1.0
  */
 public interface ISecurityHandlerInterceptor

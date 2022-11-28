@@ -7,13 +7,13 @@ import java.util.Set;
 /**
  * <h2>抽象的安全处理程序拦截器实现</h2>
  *
- * @author 云上的云
+ * @author lyq
  * @since 1.0
  */
 public abstract class AbstractSecurityHandlerInterceptor
 		implements ISecurityHandlerInterceptor {
 	protected static final String INCLUDE_ALL_URL_PATH_PATTERN = "/**";
-	
+
 	@Override
 	public Set<String> includePathPatterns() {
 		return newLinkedHashSet(INCLUDE_ALL_URL_PATH_PATTERN);
@@ -34,7 +34,7 @@ public abstract class AbstractSecurityHandlerInterceptor
 	 */
 	@SafeVarargs
 	private static <T> Set<T> newLinkedHashSet(T... elements) {
-		if (elements == null) {
+		if (elements == null || elements.length == 0) {
 			return new LinkedHashSet<>(0);
 		}
 		Set<T> set = new LinkedHashSet<>(elements.length - 1);
