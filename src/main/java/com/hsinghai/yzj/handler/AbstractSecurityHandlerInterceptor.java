@@ -1,12 +1,8 @@
 package com.hsinghai.yzj.handler;
 
-import org.assertj.core.util.Sets;
-
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * <h2>抽象的安全处理程序拦截器实现</h2>
@@ -14,12 +10,13 @@ import java.util.stream.Stream;
  * @author 云上的云
  * @since 1.0
  */
-abstract class AbstractSecurityHandlerInterceptor
+public abstract class AbstractSecurityHandlerInterceptor
 		implements ISecurityHandlerInterceptor {
+	protected static final String INCLUDE_ALL_URL_PATH_PATTERN = "/**";
 	
 	@Override
 	public Set<String> includePathPatterns() {
-		return newLinkedHashSet("/**");
+		return newLinkedHashSet(INCLUDE_ALL_URL_PATH_PATTERN);
 	}
 	
 	@Override

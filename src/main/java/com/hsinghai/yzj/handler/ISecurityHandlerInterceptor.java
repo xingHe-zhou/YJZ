@@ -1,7 +1,6 @@
 package com.hsinghai.yzj.handler;
 
 import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 
 import java.util.Set;
 
@@ -15,10 +14,10 @@ public interface ISecurityHandlerInterceptor
 		extends HandlerInterceptor {
 	/**
 	 * <p>
-	 *     要包含的路径模式.
+	 *     拦截器实例要包含的 URL 路径模式.
 	 * </p>
 	 *
-	 * @return 要包含的路径模式.
+	 * @return 包含的 URL 路径模式.
 	 */
 	default Set<String> includePathPatterns() {
 		throw new IllegalStateException("You need to provide a list of included path patterns.");
@@ -26,10 +25,10 @@ public interface ISecurityHandlerInterceptor
 	
 	/**
 	 * <p>
-	 *     要排除的路径模式.
+	 *     拦截器实例要排除的 URL 路径模式.
 	 * </p>
 	 *
-	 * @return 要排除的路径模式.
+	 * @return 排除的 URL 路径模式.
 	 */
 	default Set<String> excludePathPatterns() {
 		throw new IllegalStateException("You need to provide a list of excluded path patterns.");
