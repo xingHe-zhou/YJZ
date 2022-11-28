@@ -34,17 +34,4 @@ public interface ISecurityHandlerInterceptor
 	default Set<String> excludePathPatterns() {
 		throw new IllegalStateException("You need to provide a list of excluded path patterns.");
 	}
-	
-	/**
-	 * <p>
-	 *     最终要添加到 {@link InterceptorRegistry } 中的路径模式.
-	 * </p>
-	 *
-	 * @return 尝试剔除 {@link #excludePathPatterns()} 后的 {@link #includePathPatterns()}.
-	 */
-	default Set<String> pathPatterns() {
-		Set<String> includePathPatterns = this.includePathPatterns();
-		includePathPatterns.removeAll(this.excludePathPatterns());
-		return includePathPatterns;
-	}
 }
