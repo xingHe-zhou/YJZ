@@ -1,18 +1,19 @@
 package com.hsinghai.yzj.build;
 
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
  * <h2>通用建造者</h2>
  * <p>
- *     这是一个适用于任何持有可序列化标识的类的实例建造者, 但不提供对构建目标对象的 setter 方法进行保护或是一些业务上的检查.
- *     如果有这方面的需求, 请单独继承本类来实现您的需求.
+ *     这是一个适用于任何持有可序列化标识的类的实例建造者.
  * </p>
  *
  * @author lyq
@@ -30,25 +31,32 @@ public class Builder<T extends Serializable> {
 		return new Builder<>(noArgsConstructorSupplier);
 	}
 	
-	public <V> Builder<T> with(final BiConsumer<T, V> setterBiConsumer, final Supplier<V> setterValueSupplier) {
+	public <V> Builder<T> with(final BiConsumer<T, V> setterBiConsumer, final Supplier<V> setterValueSupplier, @NonNull Predicate<V> attributeValuePredicate) {
 		Assert.notNull(setterValueSupplier, "setterValueSupplier");
-		return with(setterBiConsumer, setterValueSupplier.get());
+		return with(setterBiConsumer, setterValueSupplier.get(), attributeValuePredicate);
 	}
 	
-	public <V> Builder<T> with(final BiConsumer<T, V> setterBiConsumer, final V setterValue) {
+	public <V> Builder<T> with(final BiConsumer<T, V> setterBiConsumer, final V setterValue, @NonNull Predicate<V> attributeValuePredicate) {
 		Assert.notNull(setterBiConsumer, "setterBiConsumer");
 		Assert.notNull(setterValue, "setterValue");
-		Consumer<T> setterConsumer = instance -> setterBiConsumer.accept(instance, setterValue);
-		if (this.setterConsumerChain == null) {
-			this.setterConsumerChain = setterConsumer;
-		} else {
-			this.setterConsumerChain = this.setterConsumerChain.andThen(setterConsumer);
+		Assert.notNull(attributeValuePredicate, "attributeValuePredicate");
+		
+		if (attributeValuePredicate.test(setterValue)) {
+			Consumer<T> setterConsumer = instance -> setterBiConsumer.accept(instance, setterValue);
+			if (this.setterConsumerChain == null) {
+				this.setterConsumerChain = setterConsumer;
+			} else {
+				this.setterConsumerChain = this.setterConsumerChain.andThen(setterConsumer);
+			}
+			return this;
 		}
-		return this;
+		
+		throw new IllegalStateException("Failure of calibration.");
 	}
 	
 	public T build() {
 		T t = this.noArgsConstructorSupplier.get();
+		if (this.setterConsumerChain == null) return t;
 		this.setterConsumerChain.accept(t);
 		return t;
 	}
